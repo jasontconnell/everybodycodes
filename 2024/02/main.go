@@ -10,9 +10,11 @@ import (
 func main() {
 	p1 := part1()
 	p2 := part2()
+	p3 := part3()
 
 	log.Println("Part 1:", p1)
 	log.Println("Part 2:", p2)
+	log.Println("Part 3:", p3)
 }
 
 func part1() int {
@@ -27,6 +29,12 @@ func part2() int {
 	words := getWords(lines)
 	inst := findAllSymbols(words, lines[2:])
 	return inst
+}
+
+func part3() int {
+	lines := common.ReadLines("everybody_codes_e2024_q2_p3.txt")
+	words := getWords(lines)
+	return findGridSymbols(words, lines[2:])
 }
 
 func getWords(lines []string) []string {
@@ -70,23 +78,28 @@ func findRuneInstances(word string, text []string) int {
 func findAllSymbols(words []string, lines []string) int {
 	count := 0
 	for _, line := range lines {
-		count += findSymbols(words, line)
+		s := findSymbols(words, line, false)
+		count += len(s)
 	}
 	return count
 }
 
-func findSymbols(words []string, line string) int {
+func findSymbols(words []string, line string, wrap bool) []int {
 	symbols := make(map[int]int)
 
 	for _, w := range words {
 		var idx int
 		for {
-			idx = indexStart(line, w, idx)
+			idx, _ = indexStart(line, w, idx, wrap)
 			if idx != -1 {
 				for j := idx; j < idx+len(w); j++ {
-					symbols[j] = 1
+					c := j % len(line)
+					symbols[c] = 1
 				}
 				idx++
+				if idx >= len(line) {
+					break
+				}
 			} else {
 				break
 			}
@@ -95,30 +108,76 @@ func findSymbols(words []string, line string) int {
 		rw := reverse(w)
 		var ridx int
 		for {
-			ridx = indexStart(line, rw, ridx)
+			ridx, _ = indexStart(line, rw, ridx, wrap)
 			if ridx != -1 {
 				for j := ridx; j < ridx+len(rw); j++ {
-					symbols[j] = 1
+					c := j % len(line)
+					symbols[c] = 1
 				}
 				ridx++
+				if ridx >= len(line) {
+					break
+				}
 			} else {
 				break
 			}
 		}
 	}
 
-	return len(symbols)
+	list := []int{}
+	for v := range symbols {
+		list = append(list, v)
+	}
+	return list
 }
 
-func indexStart(s, substr string, start int) int {
-	if start > len(s) {
-		return -1
+type coord struct {
+	x, y int
+}
+
+func findGridSymbols(words []string, grid []string) int {
+	m := make(map[coord]int)
+	for i := 0; i < len(grid); i++ {
+		list := findSymbols(words, grid[i], true)
+		for _, v := range list {
+			c := coord{x: v, y: i}
+			m[c] = 1
+		}
+	}
+	for i := 0; i < len(grid[0]); i++ {
+		cline := getVerticalLine(i, grid)
+		list := findSymbols(words, cline, false)
+		for _, v := range list {
+			c := coord{x: i, y: v}
+			m[c] = 1
+		}
+	}
+	return len(m)
+}
+
+func getVerticalLine(col int, lines []string) string {
+	s := ""
+	for y := 0; y < len(lines); y++ {
+		s += string(lines[y][col])
+	}
+	return s
+}
+
+func indexStart(s, substr string, start int, wrap bool) (int, bool) {
+	if start > len(s) || len(substr) > len(s) {
+		return -1, false
 	}
 	idx := strings.Index(s[start:], substr)
-	if idx == -1 {
-		return -1
+	if idx == -1 && !wrap {
+		return -1, false
+	} else {
+		ns := s + s[:len(substr)]
+		idx = strings.Index(ns[start:], substr)
+		if idx == -1 {
+			return -1, false
+		}
 	}
-	return start + idx
+	return start + idx, wrap
 }
 
 func reverse(s string) string {
