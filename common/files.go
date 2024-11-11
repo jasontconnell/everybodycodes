@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strconv"
 )
 
 func ReadBytes(filename string) []byte {
@@ -12,6 +13,24 @@ func ReadBytes(filename string) []byte {
 		log.Println("can't read file", filename)
 	}
 	return b
+}
+
+func ReadInts(filename string) []int {
+	lines := ReadLines(filename)
+	if lines == nil {
+		return nil
+	}
+
+	list := []int{}
+	for _, line := range lines {
+		i, err := strconv.Atoi(line)
+		if err != nil {
+			log.Println("can't get int from", line)
+			continue
+		}
+		list = append(list, i)
+	}
+	return list
 }
 
 func ReadLines(filename string) []string {
