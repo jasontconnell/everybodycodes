@@ -37,7 +37,20 @@ func part1() int {
 	return total
 }
 func part2() int {
-	return 0
+	lines := common.ReadLines("everybody_codes_e2024_q3_p2.txt")
+	g := getGrid(lines)
+	b := 0
+	done := false
+	total := 0
+	level := 0
+	w, h := len(lines[0]), len(lines)
+	for !done {
+		g, b = dig(w, h, g, level)
+		total += b
+		level++
+		done = b == 0
+	}
+	return total
 }
 func part3() int {
 	return 0
