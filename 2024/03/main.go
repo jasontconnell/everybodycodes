@@ -29,7 +29,7 @@ func part1() int {
 	level := 0
 	w, h := len(lines[0]), len(lines)
 	for !done {
-		g, b = dig(w, h, g, level)
+		g, b = dig(w, h, g, level, false)
 		total += b
 		level++
 		done = b == 0
@@ -45,7 +45,7 @@ func part2() int {
 	level := 0
 	w, h := len(lines[0]), len(lines)
 	for !done {
-		g, b = dig(w, h, g, level)
+		g, b = dig(w, h, g, level, false)
 		total += b
 		level++
 		done = b == 0
@@ -53,10 +53,23 @@ func part2() int {
 	return total
 }
 func part3() int {
-	return 0
+	lines := common.ReadLines("everybody_codes_e2024_q3_p3.txt")
+	g := getGrid(lines)
+	b := 0
+	done := false
+	total := 0
+	level := 0
+	w, h := len(lines[0]), len(lines)
+	for !done {
+		g, b = dig(w, h, g, level, true)
+		total += b
+		level++
+		done = b == 0
+	}
+	return total
 }
 
-func dig(w, h int, grid map[xy]int, level int) (map[xy]int, int) {
+func dig(w, h int, grid map[xy]int, level int, diagonals bool) (map[xy]int, int) {
 	m := make(map[xy]int)
 	removed := 0
 	for y := 0; y < h; y++ {
@@ -64,7 +77,11 @@ func dig(w, h int, grid map[xy]int, level int) (map[xy]int, int) {
 			pt := xy{x, y}
 			if b, ok := grid[pt]; ok {
 				all := true
-				for _, chkpt := range []xy{{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}} {
+				checkrange := []xy{{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}}
+				if diagonals {
+					checkrange = append(checkrange, []xy{{x + 1, y + 1}, {x - 1, y + 1}, {x + 1, y - 1}, {x - 1, y - 1}}...)
+				}
+				for _, chkpt := range checkrange {
 					if _, ok := grid[chkpt]; !ok || b != level {
 						all = false
 					}
