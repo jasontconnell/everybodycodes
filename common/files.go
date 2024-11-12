@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func ReadBytes(filename string) []byte {
@@ -29,6 +30,28 @@ func ReadInts(filename string) []int {
 			continue
 		}
 		list = append(list, i)
+	}
+	return list
+}
+
+func ReadIntGrid(filename string) [][]int {
+	lines := ReadLines(filename)
+	if lines == nil {
+		return nil
+	}
+
+	list := make([][]int, len(lines))
+	for y := 0; y < len(lines); y++ {
+		f := strings.Fields(lines[y])
+		list[y] = make([]int, len(f))
+		for x := 0; x < len(f); x++ {
+			val, err := strconv.Atoi(f[x])
+			if err != nil {
+				log.Println("invalid int", f[x])
+				continue
+			}
+			list[y][x] = val
+		}
 	}
 	return list
 }
